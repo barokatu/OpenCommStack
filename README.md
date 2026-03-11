@@ -1,20 +1,20 @@
-# 📡 OpenCommStack - Open Communication Stack (Local Docker)
+# 📡 OpenCommStack
 
-**OpenCommStack** adalah platform komunikasi instan open-source yang berjalan 100% lokal menggunakan Docker Compose. Tidak memerlukan internet atau layanan cloud eksternal.
+**OpenCommStack** is an open-source, self-hosted communication platform that runs 100% locally using Docker Compose. No internet or external cloud services required.
 
-## ✨ Fitur
+## ✨ Features
 
-- 💬 **Obrolan Real-time** — Pesan 1:1 dan grup via Socket.io/WebSocket
-- 📎 **Kirim Media** — Foto, video, file, dan dokumen
-- 😊 **Reaksi & Edit** — Reaksi emoji, edit, hapus pesan
-- ✅ **Tanda Baca** — Centang biru (✓✓) untuk pesan terbaca
-- ⌨️ **Indikator Mengetik** — Animasi saat pengguna mengetik
-- 📸 **Status/Stories** — Pembaruan 24 jam dengan latar warna
-- 📞 **Panggilan WebRTC** — Suara & video via LAN
-- 🌙 **Mode Gelap** — Toggle dark/light mode
-- 🔐 **Enkripsi E2E** — Simulasi dengan CryptoJS
-- 🇮🇩 **Bahasa Indonesia** — Seluruh UI dalam Bahasa Indonesia
-- 📱 **PWA** — Installable sebagai aplikasi
+- 💬 **Real-time Chat** — 1:1 and group messaging via Socket.io/WebSocket
+- 📎 **Media Sharing** — Photos, videos, files, and documents
+- 😊 **Reactions & Editing** — Emoji reactions, edit, and delete messages
+- ✅ **Read Receipts** — Blue checkmarks (✓✓) for read messages
+- ⌨️ **Typing Indicators** — Live animation when a user is typing
+- 📸 **Stories/Status** — 24-hour updates with colored backgrounds
+- 📞 **WebRTC Calls** — Voice & video calls over LAN
+- 🌙 **Dark Mode** — Toggle between dark and light themes
+- 🔐 **E2E Encryption** — Simulated end-to-end encryption with CryptoJS
+- 📱 **PWA** — Installable as a progressive web app
+- 📱 **Mobile App** — React Native (Expo) mobile client
 
 ## 🛠️ Tech Stack
 
@@ -23,59 +23,112 @@
 | Frontend | Next.js 15, React 19, Tailwind CSS, Zustand, React Query |
 | Backend  | Node.js, Express, Socket.io, Prisma ORM                  |
 | Database | PostgreSQL 16                                            |
-| Calls    | WebRTC (peer-to-peer via LAN)                            |
+| Mobile   | React Native, Expo Router                                |
+| Calls    | WebRTC (peer-to-peer over LAN)                           |
 | Deploy   | Docker Compose                                           |
 
 ## 🚀 Quick Start
 
-### Prasyarat
+### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) & Docker Compose
 
-### Menjalankan
+### Running with Docker (Recommended)
 
 ```bash
-# Clone repo
-git clone <repo-url> opencommstack
-cd opencommstack
+# Clone the repo
+git clone https://github.com/barokatu/OpenCommStack.git
+cd OpenCommStack
 
-# Build dan jalankan
+# Build and start all services
 docker compose up --build
 
-# Atau jalankan di background
+# Or run in the background
 docker compose up --build -d
 ```
 
-Aplikasi akan tersedia di:
+Once running, the app is available at:
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API**: [http://localhost:3001](http://localhost:3001)
-- **Database**: localhost:5432
+| Service      | URL                                                    |
+| ------------ | ------------------------------------------------------ |
+| Frontend     | [http://localhost:3000](http://localhost:3000)          |
+| Backend API  | [http://localhost:3001](http://localhost:3001)          |
+| Database     | `localhost:5432`                                       |
 
-### Menghentikan
+### Running without Docker (Local Development)
+
+#### 1. Start PostgreSQL
+
+Make sure you have PostgreSQL running locally, then create a database:
 
 ```bash
+createdb opencommstack
+```
+
+#### 2. Start the Backend
+
+```bash
+cd backend
+npm install
+
+# Set your database URL
+export DATABASE_URL="postgresql://your_user:your_password@localhost:5432/opencommstack"
+
+# Run database migrations
+npx prisma migrate deploy
+npx prisma generate
+
+# Start the dev server
+npm run dev
+```
+
+The backend API will be available at `http://localhost:3001`.
+
+#### 3. Start the Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000`.
+
+#### 4. Start the Mobile App (Optional)
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
+When prompted, enter your backend server URL (e.g., `http://192.168.1.x:3001`).
+
+### Stopping
+
+```bash
+# Stop Docker services
 docker compose down
 
-# Untuk menghapus semua data
+# Stop and remove all data (database, uploads)
 docker compose down -v
 ```
 
-## 📱 Cara Penggunaan
+## 📱 Usage
 
-1. Buka [http://localhost:3000](http://localhost:3000) di browser
-2. **Daftar** dengan nomor telepon dan PIN 6 digit
-3. Buka tab kedua (atau browser lain) untuk membuat user kedua
-4. Mulai mengobrol! 💬
+1. Open [http://localhost:3000](http://localhost:3000) in your browser
+2. **Register** with a phone number and a 6-digit PIN
+3. Open a second tab (or another browser) to create a second user
+4. Start chatting! 💬
 
-### Testing Multi-User
+### Multi-User Testing
 
-Buka 2 tab browser berbeda, daftar sebagai 2 user berbeda, lalu mulai chat dan panggilan.
+Open 2 separate browser tabs, register as 2 different users, then start chatting and making calls.
 
-## 📁 Struktur Proyek
+## 📁 Project Structure
 
 ```
-opencommstack/
+OpenCommStack/
 ├── docker-compose.yml
 ├── README.md
 ├── backend/
@@ -88,39 +141,50 @@ opencommstack/
 │       ├── index.js          # Express + Socket.io server
 │       ├── lib/              # Prisma client, crypto
 │       ├── middleware/       # JWT auth
-│       ├── routes/           # REST API
-│       └── socket/           # Real-time handlers
-└── frontend/
-    ├── Dockerfile
+│       ├── routes/           # REST API endpoints
+│       └── socket/           # Real-time event handlers
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── next.config.js
+│   ├── tailwind.config.js
+│   ├── public/               # PWA manifest & icons
+│   └── src/
+│       ├── app/              # Next.js pages
+│       ├── components/       # React components
+│       ├── hooks/            # Socket.io, WebRTC hooks
+│       ├── lib/              # API, i18n, utils
+│       └── store/            # Zustand state stores
+└── mobile/
+    ├── app.json
     ├── package.json
-    ├── next.config.js
-    ├── tailwind.config.js
-    ├── public/               # PWA manifest
-    └── src/
-        ├── app/              # Next.js pages
-        ├── components/       # React components
-        ├── hooks/            # Socket.io, WebRTC hooks
-        ├── lib/              # API, i18n, utils
-        └── store/            # Zustand stores
+    ├── app/                  # Expo Router screens
+    ├── hooks/                # Socket.io hooks
+    ├── lib/                  # API, constants, i18n
+    └── store/                # Zustand state stores
 ```
 
 ## 🔧 Environment Variables
 
 ### Backend
 
-| Variable     | Default                                                          | Description           |
-| ------------ | ---------------------------------------------------------------- | --------------------- |
-| DATABASE_URL | postgresql://opencommstack:localdev123@db:5432/opencommstack     | PostgreSQL connection |
-| JWT_SECRET   | opencommstack-local-secret-key-2024                              | JWT signing key       |
-| PORT         | 3001                                                             | Server port           |
-| CORS_ORIGIN  | http://localhost:3000                                            | Frontend URL          |
+| Variable       | Default                                                      | Description             |
+| -------------- | ------------------------------------------------------------ | ----------------------- |
+| `DATABASE_URL` | `postgresql://opencommstack:localdev123@db:5432/opencommstack` | PostgreSQL connection |
+| `JWT_SECRET`   | `opencommstack-local-secret-key-2024`                        | JWT signing key         |
+| `PORT`         | `3001`                                                       | Server port             |
+| `CORS_ORIGIN`  | `http://localhost:3000`                                      | Allowed frontend origin |
 
 ### Frontend
 
-| Variable            | Default               | Description     |
-| ------------------- | --------------------- | --------------- |
-| NEXT_PUBLIC_API_URL | http://localhost:3001 | Backend API URL |
-| NEXT_PUBLIC_WS_URL  | http://localhost:3001 | WebSocket URL   |
+| Variable              | Default                | Description     |
+| --------------------- | ---------------------- | --------------- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | Backend API URL |
+| `NEXT_PUBLIC_WS_URL`  | `http://localhost:3001` | WebSocket URL   |
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues and pull requests.
 
 ## 📝 License
 
