@@ -1,0 +1,176 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  phone       String   @unique
+  pin         String
+  name        String
+  about       String   @default("Hey there! I am using OpenCommStack")
+  avatar      String?
+  lastSeen    DateTime @default(now())
+  isOnline    Boolean  @default(false)
+  darkMode    Boolean  @default(false)
+  language    String   @default("id")
+  privacyLastSeen   String @default("everyone")
+  privacyAvatar     String @default("everyone")
+  privacyAbout      String @default("everyone")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatMembers    ChatMember[]
+  messages       Message[]
+  reactions      MessageReaction[]
+  statuses       Status[]
+  statusViews    StatusView[]
+  callsInitiated Call[]            @relation("CallInitiator")
+  callParticipants CallParticipant[]
+  contacts       Contact[]         @relation("UserContacts")
+  contactOf      Contact[]         @relation("ContactOf")
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  userId    String
+  contactId String
+  nickname  String?
+  createdAt DateTime @default(now())
+
+  user    User @relation("UserContacts", fields: [userId], references: [id])
+  contact User @relation("ContactOf", fields: [contactId], references: [id])
+
+  @@unique([userId, contactId])
+}
+
+model Chat {
+  id          String   @id @default(uuid())
+  name        String?
+  isGroup     Boolean  @default(false)
+  avatar      String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  ChatMember[]
+  messages Message[]
+}
+
+model ChatMember {
+  id        String   @id @default(uuid())
+  chatId    String
+  userId    String
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+  muted     Boolean  @default(false)
+  archived  Boolean  @default(false)
+  pinned    Boolean  @default(false)
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id            String   @id @default(uuid())
+  chatId        String
+  senderId      String
+  content       String?
+  encryptedContent String?
+  type          String   @default("text")
+  mediaUrl      String?
+  mediaType     String?
+  fileName      String?
+  fileSize      Int?
+  replyToId     String?
+  isForwarded   Boolean  @default(false)
+  isEdited      Boolean  @default(false)
+  isDeleted     Boolean  @default(false)
+  readBy        String[] @default([])
+  deliveredTo   String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  chat      Chat              @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User              @relation(fields: [senderId], references: [id])
+  replyTo   Message?          @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies   Message[]         @relation("MessageReplies")
+  reactions MessageReaction[]
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId])
+}
+
+model Status {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String?
+  mediaUrl  String?
+  mediaType String?
+  type      String   @default("text")
+  bgColor   String?  @default("#075E54")
+  audience  String   @default("everyone")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user  User         @relation(fields: [userId], references: [id])
+  views StatusView[]
+}
+
+model StatusView {
+  id        String   @id @default(uuid())
+  statusId  String
+  userId    String
+  viewedAt  DateTime @default(now())
+
+  status Status @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([statusId, userId])
+}
+
+model Call {
+  id          String   @id @default(uuid())
+  initiatorId String
+  type        String   @default("voice")
+  isGroup     Boolean  @default(false)
+  status      String   @default("ringing")
+  startedAt   DateTime?
+  endedAt     DateTime?
+  duration    Int?
+  createdAt   DateTime @default(now())
+
+  initiator    User              @relation("CallInitiator", fields: [initiatorId], references: [id])
+  participants CallParticipant[]
+}
+
+model CallParticipant {
+  id       String   @id @default(uuid())
+  callId   String
+  userId   String
+  status   String   @default("ringing")
+  joinedAt DateTime?
+  leftAt   DateTime?
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([callId, userId])
+}

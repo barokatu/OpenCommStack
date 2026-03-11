@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "OpenCommStack",
+    "slug": "opencommstack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "opencommstack",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#075E54"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#075E54"
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "OpenCommStack memerlukan akses kamera untuk panggilan video",
+        "NSMicrophoneUsageDescription": "OpenCommStack memerlukan akses mikrofon untuk panggilan suara"
+      }
+    },
+    "plugins": ["expo-router"]
+  }
+}
